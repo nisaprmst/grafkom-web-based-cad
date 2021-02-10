@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+   <body>
+      <canvas onclick="canvasClick(event)" onmousemove="canvasMove(event)" width = "300" height = "300" id = "my_Canvas"></canvas>
+      <button onclick="createRectangle()">Draw Rectangle</button>
+      <button onclick="enterMode(modes.MOVING)">Enter Moving Mode</button>
+      <button onclick="enterMode(modes.RESIZING)">Enter Resizing Mode</button>
+      <button onclick="enterMode(modes.DRAWING)">Enter Drawing Mode</button>
+      <input id="colorPicker" type="color" value="#ff0000">
+      <script src="index.js"></script>
+   </body>
+</html>
