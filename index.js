@@ -85,6 +85,15 @@ function insidePolygon(point, polygon) {
   return inside;
 };
 
+function inLine(point, line) {
+  let m = (line.vertices[4] - line.vertices[1]) / (line.vertices[3] - line.vertices[0]);
+  let b = line.vertices[1] - m * line.vertices[0];
+  let f = ((m * point.x) + b); 
+  let y = (point.y);
+
+  return (Math.abs(f-y) <= 0.02);
+}
+
 function getAllSelected(cursor) {
   //get all triangles that its area contains our mouse cursor
   let result = [];
@@ -104,10 +113,26 @@ function getAllSelected(cursor) {
       if (insidePolygon(cursor, poly)) {
         result.push(poly);
       }
-    }
+    } else if (canvasObject[i] instanceof Line) {
+      let line = canvasObject[i];
+      if (inLine(cursor, line)) {
+        result.push(line);
+      }
+    } 
   }
   return result;
 }
+
+// function getAllSelectedLine(cursor) {
+//   let result = [];
+//   for (let i = 0; i < canvasObject.length; i++) {
+//     if (canvasObject[i] instanceof Line) {
+//       let line = canvasObject[i];
+//       if (
+//         cursor.x 
+//       )
+//   }
+// }
 
 function canvasMove(e) {
   //detect user's cursor move on canvas
@@ -127,7 +152,12 @@ function canvasMove(e) {
     setTimeout(function () {
       let cursor = { x: e.clientX, y: e.clientY };
       let translatedMidPoint = translatePointCoordinate(cursor.x, cursor.y);
-      selectedObject.resizeRectangle(translatedMidPoint.x);
+      if (selectedObject instanceof Rectangle) {
+        selectedObject.resizeRectangle(translatedMidPoint.x);
+      } 
+      // else {
+      //   se
+      // }
     }, 10);
   }
 }
