@@ -56,9 +56,6 @@ class Polygon {
     }
 
     drawOnCanvas() {
-      console.log("polygon");
-      console.log(this.vertices);
-      console.log(this.indices);
         let vertex_buffer = getVerticesBuffer(this.vertices);
         let index_buffer = getIndicesBuffer(this.indices);
         let vertShader = getVertexShader();
@@ -67,6 +64,11 @@ class Polygon {
         transformObject(shaderProgram, this.xformMatrix);
         bindVertexBuffer(shaderProgram, vertex_buffer, index_buffer);
         gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+    }
+
+    changeColor(newColor) {
+        this.color = newColor;
+        renderAll();
     }
   
     movePolygon(newMidPoint) {

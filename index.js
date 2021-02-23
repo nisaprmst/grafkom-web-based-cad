@@ -11,8 +11,8 @@ function canvasClick(e) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
   } else {
     if (!selectedObject) {
-      let selectedRectangles = getAllSelectedRectangle(translatedMidPoint);
-      selectedObject = selectedRectangles[selectedRectangles.length - 1];
+      let selected = getAllSelected(translatedMidPoint);
+      selectedObject = selected[selected.length - 1];
     } else {
       selectedObject = null;
     }
@@ -41,7 +41,27 @@ function createPolygon() {
   }
 }
 
-function getAllSelectedRectangle(cursor) {
+function insidePolygon(point, polygon) {
+  // ray-casting algorithm based on
+  // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
+  
+  let x = point.x, y = point.y;
+  let vs = polygon.vertices;
+  let inside = false;
+  // dikurangi 3 karena vertice terakhir isinya midpoint
+  for (let i = 0, j = Math.floor(vs.length/3) - 4; i < Math.floor(vs.length/3) - 3; j = i++) {
+      let xi = vs[i*3], yi = vs[i*3+1];
+      let xj = vs[j*3], yj = vs[j*3+1];
+      
+      let intersect = ((yi > y) != (yj > y))
+          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+  }
+  
+  return inside;
+};
+
+function getAllSelected(cursor) {
   //get all triangles that its area contains our mouse cursor
   let result = [];
   for (let i = 0; i < canvasObject.length; i++) {
@@ -54,6 +74,11 @@ function getAllSelectedRectangle(cursor) {
         cursor.y > rect.bottom
       ) {
         result.push(rect);
+      }
+    } else if (canvasObject[i] instanceof Polygon) {
+      let poly = canvasObject[i];
+      if (insidePolygon(cursor, poly)) {
+        result.push(poly);
       }
     }
   }
@@ -68,7 +93,11 @@ function canvasMove(e) {
       console.log(cursor);
       let translatedMidPoint = translatePointCoordinate(cursor.x, cursor.y);
       console.log(translatedMidPoint);
-      selectedObject.moveRectangle(translatedMidPoint);
+      if (selectedObject instanceof Rectangle) {
+        selectedObject.moveRectangle(translatedMidPoint);
+      } else {
+        selectedObject.movePolygon(translatedMidPoint);
+      }
     }, 10);
   } else if (currentMode == modes.RESIZING && selectedObject) {
     setTimeout(function () {
