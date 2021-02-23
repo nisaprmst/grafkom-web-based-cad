@@ -20,6 +20,7 @@ function canvasClick(e) {
   } else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
+      console.log(selected);
       selectedObject = selected[selected.length - 1];
     } else {
       selectedObject = null;
@@ -164,6 +165,8 @@ function canvasMove(e) {
       let translatedMidPoint = translatePointCoordinate(cursor.x, cursor.y);
       if (selectedObject instanceof Rectangle) {
         selectedObject.resizeRectangle(translatedMidPoint.x);
+      } else if (selectedObject instanceof Line) {
+        selectedObject.resizeLine(translatedMidPoint.x, translatedMidPoint.y);
       }
       // else {
       //   se
