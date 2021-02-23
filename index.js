@@ -1,109 +1,94 @@
 function getVerticesBuffer(vertices) {
-  // Create an empty buffer object to store the vertex buffer
+  // Return buffer object to store the vertices
   var vertex_buffer = gl.createBuffer();
-  //Bind appropriate array buffer to it
   gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-  // Pass the vertex data to the buffer
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  // Unbind the buffer
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
   return vertex_buffer;
 }
 
 function getIndicesBuffer(indices) {
-  // Create an empty buffer object to store Index buffer
+  // Return buffer object to store indices
   var index_buffer = gl.createBuffer();
-
-  // Bind appropriate array buffer to it
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-
-  // Pass the vertex data to the buffer
   gl.bufferData(
     gl.ELEMENT_ARRAY_BUFFER,
     new Uint16Array(indices),
     gl.STATIC_DRAW
   );
-
-  // Unbind the buffer
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
   return index_buffer;
 }
 
 function getVertexShader() {
+  //Return shader that store vertex shader
   var vertCode =
-    "attribute vec3 coordinates;" +
+    "attribute vec4 coordinates;" +
+    "uniform mat4 u_xformMatrix;" +
     "void main(void) {" +
-    " gl_Position = vec4(coordinates, 1.0);" +
+    " gl_Position = u_xformMatrix * coordinates;" +
     "gl_PointSize = 10.0;" +
     "}";
 
-  // Create a vertex shader object
   var vertShader = gl.createShader(gl.VERTEX_SHADER);
 
-  // Attach vertex shader source code
   gl.shaderSource(vertShader, vertCode);
 
-  // Compile the vertex shader
   gl.compileShader(vertShader);
 
   return vertShader;
 }
 
 function getFragmentShader(rgb) {
-  // fragment shader source code
+  // Return shader that store fragment shader (inc object color)
   var fragCode = `void main(void) {
       gl_FragColor = vec4(${rgb.red}, ${rgb.green}, ${rgb.blue}, 1);
     }`;
 
-  // Create fragment shader object
   var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
 
-  // Attach fragment shader source code
   gl.shaderSource(fragShader, fragCode);
 
-  // Compile the fragmentt shader
   gl.compileShader(fragShader);
 
   return fragShader;
 }
 
 function getShaderProgram(vertShader, fragShader) {
-  // the combined shader program
+  // get program that contains vertex shader and fragment shader
   var shaderProgram = gl.createProgram();
 
-  // Attach a vertex shader
   gl.attachShader(shaderProgram, vertShader);
 
-  // Attach a fragment shader
   gl.attachShader(shaderProgram, fragShader);
 
-  // Link both programs
   gl.linkProgram(shaderProgram);
 
-  // Use the combined shader program object
   gl.useProgram(shaderProgram);
 
   return shaderProgram;
 }
 
+function transformObject(shaderProgram, xformMatrix) {
+  //Transform object based on its transform matrix
+  var u_xformMatrix = gl.getUniformLocation(shaderProgram, "u_xformMatrix");
+  gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix);
+}
+
 function bindVertexBuffer(shaderProgram, vertex_buffer, index_buffer) {
-  /*======== Associating shaders to buffer objects ========*/
-  // Bind vertex buffer object
+  //Associating shaders to buffer objects
   gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 
   if (index_buffer) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
   }
 
-  // Get the attribute location
   var coord = gl.getAttribLocation(shaderProgram, "coordinates");
 
-  // Point an attribute to the currently bound VBO
   gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
 
-  // Enable the attribute
   gl.enableVertexAttribArray(coord);
 }
 
@@ -116,14 +101,13 @@ function clearCanvas() {
   // Clear the canvas
   gl.clearColor(0.5, 0.5, 0.5, 0.9);
 
-  // Enable the depth test
   gl.enable(gl.DEPTH_TEST);
 
-  // Clear the color buffer bit
   gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
 function renderAll() {
+  //render all objects in canvas
   clearCanvas();
   for (let i = 0; i < canvasObject.length; i++) {
     canvasObject[canvasObject.length - i - 1].drawOnCanvas();
@@ -131,11 +115,13 @@ function renderAll() {
 }
 
 function translateWidth(width) {
+  //translate width to canvas coordinate (x -> -1 s.d 1, y -> -1 s.d 1)
   let rect = canvas.getBoundingClientRect();
   return (width / rect.width) * 2;
 }
 
 function translatePointCoordinate(x, y) {
+  //translate a cursor coordinate into canvas coordinate
   let rect = canvas.getBoundingClientRect();
   let midX = rect.left + rect.width / 2;
   let midY = rect.top + rect.height / 2;
@@ -146,6 +132,7 @@ function translatePointCoordinate(x, y) {
 }
 
 function canvasClick(e) {
+  //detect user click on canvas
   let midPoint = { x: e.clientX, y: e.clientY };
   let translatedMidPoint = translatePointCoordinate(midPoint.x, midPoint.y);
   if (currentMode == modes.DRAWING) {
@@ -162,6 +149,7 @@ function canvasClick(e) {
 }
 
 function canvasMove(e) {
+  //detect user's cursor move on canvas
   if (currentMode == modes.MOVING && selectedObject) {
     setTimeout(function () {
       let cursor = { x: e.clientX, y: e.clientY };
@@ -180,10 +168,12 @@ function canvasMove(e) {
 }
 
 function enterMode(mode) {
+  //switch mode
   currentMode = mode;
 }
 
 function createRectangle() {
+  //create new triangle
   let hexColor = document.getElementById("colorPicker").value;
   if (currentMode == modes.DRAWING) {
     let midPoint = { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
@@ -213,6 +203,7 @@ function getAllSelectedRectangle(cursor) {
 }
 
 function hexToRgb(hex) {
+  //convert color picker input that is in hex format into rgb format
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
@@ -225,13 +216,32 @@ function hexToRgb(hex) {
 
 class Point {
   constructor(x, y) {
-    this.vertices = [x, y, -0.5];
+    this.vertices = [x, y, -0.5]; //-0.5 so the control point is on top of all other objects
+    this.xformMatrix = new Float32Array([
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+    ]);
   }
   drawOnCanvas() {
     let vertex_buffer = getVerticesBuffer(this.vertices);
     let vertShader = getVertexShader();
     let fragShader = getFragmentShader({ red: 0.0, green: 1.0, blue: 0.0 }); // Create a shader program object to store
     let shaderProgram = getShaderProgram(vertShader, fragShader);
+    transformObject(shaderProgram, this.xformMatrix);
     bindVertexBuffer(shaderProgram, vertex_buffer);
     drawPrimitives();
   }
@@ -265,6 +275,24 @@ class Rectangle {
       0,
     ];
     this.indices = [0, 1, 3, 0, 3, 2];
+    this.xformMatrix = new Float32Array([
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+    ]);
   }
   drawOnCanvas() {
     let vertex_buffer = getVerticesBuffer(this.vertices);
@@ -272,6 +300,7 @@ class Rectangle {
     let vertShader = getVertexShader();
     let fragShader = getFragmentShader(this.color);
     let shaderProgram = getShaderProgram(vertShader, fragShader);
+    transformObject(shaderProgram, this.xformMatrix);
     bindVertexBuffer(shaderProgram, vertex_buffer, index_buffer);
     gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
   }
@@ -318,6 +347,10 @@ class Rectangle {
       this.bottom,
       0,
     ];
+    //let newWidth = Math.abs(xCursor - this.midPoint.x) * 2;
+    //let scalePoint = newWidth / this.width;
+    //update the xformMatrix
+    //this.xformMatrix[0] = this.xformMatrix[5] = scalePoint;
     renderAll();
   }
 }
