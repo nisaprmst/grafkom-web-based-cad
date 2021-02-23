@@ -123,17 +123,6 @@ function getAllSelected(cursor) {
   return result;
 }
 
-// function getAllSelectedLine(cursor) {
-//   let result = [];
-//   for (let i = 0; i < canvasObject.length; i++) {
-//     if (canvasObject[i] instanceof Line) {
-//       let line = canvasObject[i];
-//       if (
-//         cursor.x 
-//       )
-//   }
-// }
-
 function canvasMove(e) {
   //detect user's cursor move on canvas
   if (currentMode == modes.MOVING && selectedObject) {
@@ -155,9 +144,9 @@ function canvasMove(e) {
       if (selectedObject instanceof Rectangle) {
         selectedObject.resizeRectangle(translatedMidPoint.x);
       } 
-      // else {
-      //   se
-      // }
+      else if (selectedObject instanceof Line) {
+        selectedObject.resizeLine(translatedMidPoint.x);
+      }
     }, 10);
   }
 }
