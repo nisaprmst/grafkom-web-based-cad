@@ -13,6 +13,8 @@
                <div class="spaceBox"></div>
                <button onclick="enterMode(modes.RESIZING)">Enter Resizing Mode</button>
                <div class="spaceBox"></div>
+               <button onclick="createLineFirstPoint()">Enter Draw Line Mode</button>
+               <div class="spaceBox"></div>
             </div>
             <canvas onclick="canvasClick(event)" onmousemove="canvasMove(event)" width = "300" height = "300" id = "my_Canvas"></canvas>
             <div class="item"> 
@@ -34,6 +36,7 @@
       </div>
       
       <script src="point.js"></script>
+      <script src="line.js"></script>
       <script src="rectangle.js"></script>
       <script src="polygon.js"></script>
       <script src="utils.js"></script>

@@ -33,11 +33,4 @@ class Line {
       bindVertexBuffer(shaderProgram, vertex_buffer);
       gl.drawArrays(gl.LINES, 0, 2);
     }
-  }
-  
-  function createLine() {
-    if (currentMode == modes.LINEFIRST) {
-      firstPoint = { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
-      currentMode = modes.LINESECOND;
-    }
-  }
+}

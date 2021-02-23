@@ -7,9 +7,18 @@ function canvasClick(e) {
   //detect user click on canvas
   let midPoint = { x: e.clientX, y: e.clientY };
   let translatedMidPoint = translatePointCoordinate(midPoint.x, midPoint.y);
+
+  console.log(currentMode);
   if (currentMode == modes.DRAWING) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
-  } else {
+  } 
+  else if (currentMode == modes.DRAWLINE) {
+    controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
+    secondPoint = new Point(translatedMidPoint.x, translatedMidPoint.y);
+    createLine(firstPoint, secondPoint);
+    enterMode(modes.DRAWING);
+  } 
+  else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
       selectedObject = selected[selected.length - 1];
@@ -17,6 +26,21 @@ function canvasClick(e) {
       selectedObject = null;
     }
   }
+}
+
+function createLineFirstPoint() {
+  firstPoint = new Point(controlPoint.vertices[0], controlPoint.vertices[1]);
+  enterMode(modes.DRAWLINE);
+}
+
+function createLine(firstPoint, secondPoint) {
+  // create new line
+  let hexColor = document.getElementById("colorPicker").value;
+  let line = new Line({x: firstPoint.vertices[0], y: firstPoint.vertices[1]},
+                      {x: secondPoint.vertices[0], y: secondPoint.vertices[1]},
+                      hexToRgb(hexColor));
+  canvasObject.push(line);
+  renderAll();
 }
 
 function createRectangle() {
@@ -108,12 +132,14 @@ function canvasMove(e) {
   }
 }
 
+/* MAIN */
 let canvas = document.getElementById("my_Canvas");
 let gl = canvas.getContext("webgl");
 const modes = {
   DRAWING: 1,
   MOVING: 2,
   RESIZING: 3,
+  DRAWLINE: 4,
 };
 currentMode = modes.DRAWING;
 let selectedObject = null;
@@ -127,3 +153,5 @@ console.log(document.getElementById("colorPicker").value);
 let rect = canvas.getBoundingClientRect();
 console.log(rect.left);
 console.log(rect.top);
+let firstPoint;
+let secondPoint;
