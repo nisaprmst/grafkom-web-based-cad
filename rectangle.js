@@ -1,8 +1,8 @@
 class Rectangle {
-  constructor(midPoint, color) {
+  constructor(midPoint, color, width) {
     this.midPoint = midPoint;
     this.color = color;
-    this.width = 0.4;
+    this.width = width;
     this.left = midPoint.x - this.width / 2;
     this.top = midPoint.y + this.width / 2;
     this.right = midPoint.x + this.width / 2;
