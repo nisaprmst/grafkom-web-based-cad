@@ -11,14 +11,13 @@ function canvasClick(e) {
   console.log(currentMode);
   if (currentMode == modes.DRAWING) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
-  } 
-  else if (currentMode == modes.DRAWLINE) {
+    renderAll();
+  } else if (currentMode == modes.DRAWLINE) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
     secondPoint = new Point(translatedMidPoint.x, translatedMidPoint.y);
     createLine(firstPoint, secondPoint);
     enterMode(modes.DRAWING);
-  } 
-  else {
+  } else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
       selectedObject = selected[selected.length - 1];
@@ -36,9 +35,11 @@ function createLineFirstPoint() {
 function createLine(firstPoint, secondPoint) {
   // create new line
   let hexColor = document.getElementById("colorPicker").value;
-  let line = new Line({x: firstPoint.vertices[0], y: firstPoint.vertices[1]},
-                      {x: secondPoint.vertices[0], y: secondPoint.vertices[1]},
-                      hexToRgb(hexColor));
+  let line = new Line(
+    { x: firstPoint.vertices[0], y: firstPoint.vertices[1] },
+    { x: secondPoint.vertices[0], y: secondPoint.vertices[1] },
+    hexToRgb(hexColor)
+  );
   canvasObject.push(line);
   renderAll();
 }
@@ -68,30 +69,39 @@ function createPolygon() {
 function insidePolygon(point, polygon) {
   // ray-casting algorithm based on
   // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
-  
-  let x = point.x, y = point.y;
+
+  let x = point.x,
+    y = point.y;
   let vs = polygon.vertices;
   let inside = false;
   // dikurangi 3 karena vertice terakhir isinya midpoint
-  for (let i = 0, j = Math.floor(vs.length/3) - 4; i < Math.floor(vs.length/3) - 3; j = i++) {
-      let xi = vs[i*3], yi = vs[i*3+1];
-      let xj = vs[j*3], yj = vs[j*3+1];
-      
-      let intersect = ((yi > y) != (yj > y))
-          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
+  for (
+    let i = 0, j = Math.floor(vs.length / 3) - 4;
+    i < Math.floor(vs.length / 3) - 3;
+    j = i++
+  ) {
+    let xi = vs[i * 3],
+      yi = vs[i * 3 + 1];
+    let xj = vs[j * 3],
+      yj = vs[j * 3 + 1];
+
+    let intersect =
+      yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
   }
-  
+
   return inside;
-};
+}
 
 function inLine(point, line) {
-  let m = (line.vertices[4] - line.vertices[1]) / (line.vertices[3] - line.vertices[0]);
+  let m =
+    (line.vertices[4] - line.vertices[1]) /
+    (line.vertices[3] - line.vertices[0]);
   let b = line.vertices[1] - m * line.vertices[0];
-  let f = ((m * point.x) + b); 
-  let y = (point.y);
+  let f = m * point.x + b;
+  let y = point.y;
 
-  return (Math.abs(f-y) <= 0.02);
+  return Math.abs(f - y) <= 0.02;
 }
 
 function getAllSelected(cursor) {
@@ -118,7 +128,7 @@ function getAllSelected(cursor) {
       if (inLine(cursor, line)) {
         result.push(line);
       }
-    } 
+    }
   }
   return result;
 }
@@ -129,7 +139,7 @@ function getAllSelected(cursor) {
 //     if (canvasObject[i] instanceof Line) {
 //       let line = canvasObject[i];
 //       if (
-//         cursor.x 
+//         cursor.x
 //       )
 //   }
 // }
@@ -154,7 +164,7 @@ function canvasMove(e) {
       let translatedMidPoint = translatePointCoordinate(cursor.x, cursor.y);
       if (selectedObject instanceof Rectangle) {
         selectedObject.resizeRectangle(translatedMidPoint.x);
-      } 
+      }
       // else {
       //   se
       // }
