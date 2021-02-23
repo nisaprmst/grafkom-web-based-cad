@@ -120,6 +120,7 @@ function canvasClick(e) {
   let translatedMidPoint = translatePointCoordinate(midPoint.x, midPoint.y);
   if (currentMode == modes.DRAWING) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
+    renderAll();
   } else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
