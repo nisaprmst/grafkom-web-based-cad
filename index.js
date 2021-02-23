@@ -306,6 +306,7 @@ class Rectangle {
   }
 
   moveRectangle(newMidPoint) {
+    this.midPoint = newMidPoint;
     this.left = newMidPoint.x - this.width / 2;
     this.top = newMidPoint.y + this.width / 2;
     this.right = newMidPoint.x + this.width / 2;

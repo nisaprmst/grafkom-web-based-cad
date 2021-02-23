@@ -1,0 +1,24 @@
+.container {
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+}
+
+.instruction {
+  border: 5px solid black;
+}
+
+.toolbox {
+  width: 300px;
+  display: flex;
+}
+
+.toolbox .item {
+  margin-right: 50px;
+  margin-left: 50px;
+}
+
+.spaceBox {
+  height: 10px;
+}
