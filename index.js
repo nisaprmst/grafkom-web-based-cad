@@ -30,6 +30,17 @@ function createRectangle() {
   }
 }
 
+function createPolygon() {
+  //create new triangle
+  let hexColor = document.getElementById("colorPicker").value;
+  if (currentMode == modes.DRAWING) {
+    let midPoint = { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
+    let rect = new Polygon(midPoint, hexToRgb(hexColor), 6);
+    canvasObject.push(rect);
+    renderAll();
+  }
+}
+
 function getAllSelectedRectangle(cursor) {
   //get all triangles that its area contains our mouse cursor
   let result = [];
