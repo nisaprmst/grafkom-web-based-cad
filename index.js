@@ -118,17 +118,42 @@ function canvasClick(e) {
   //detect user click on canvas
   let midPoint = { x: e.clientX, y: e.clientY };
   let translatedMidPoint = translatePointCoordinate(midPoint.x, midPoint.y);
+
+  console.log(currentMode);
   if (currentMode == modes.DRAWING) {
     controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
     renderAll();
+  } else if (currentMode == modes.DRAWLINE) {
+    controlPoint.movePoint(translatedMidPoint.x, translatedMidPoint.y);
+    secondPoint = new Point(translatedMidPoint.x, translatedMidPoint.y);
+    createLine(firstPoint, secondPoint);
+    enterMode(modes.DRAWING);
   } else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
+      console.log(selected);
       selectedObject = selected[selected.length - 1];
     } else {
       selectedObject = null;
     }
   }
+}
+
+function createLineFirstPoint() {
+  firstPoint = new Point(controlPoint.vertices[0], controlPoint.vertices[1]);
+  enterMode(modes.DRAWLINE);
+}
+
+function createLine(firstPoint, secondPoint) {
+  // create new line
+  let hexColor = document.getElementById("colorPicker").value;
+  let line = new Line(
+    { x: firstPoint.vertices[0], y: firstPoint.vertices[1] },
+    { x: secondPoint.vertices[0], y: secondPoint.vertices[1] },
+    hexToRgb(hexColor)
+  );
+  canvasObject.push(line);
+  renderAll();
 }
 
 function createRectangle(attr) {
@@ -195,6 +220,17 @@ function insidePolygon(point, polygon) {
   return inside;
 }
 
+function inLine(point, line) {
+  let m =
+    (line.vertices[4] - line.vertices[1]) /
+    (line.vertices[3] - line.vertices[0]);
+  let b = line.vertices[1] - m * line.vertices[0];
+  let f = m * point.x + b;
+  let y = point.y;
+
+  return Math.abs(f - y) <= 0.02;
+}
+
 function getAllSelected(cursor) {
   //get all triangles that its area contains our mouse cursor
   let result = [];
@@ -214,10 +250,26 @@ function getAllSelected(cursor) {
       if (insidePolygon(cursor, poly)) {
         result.push(poly);
       }
+    } else if (canvasObject[i] instanceof Line) {
+      let line = canvasObject[i];
+      if (inLine(cursor, line)) {
+        result.push(line);
+      }
     }
   }
   return result;
 }
+
+// function getAllSelectedLine(cursor) {
+//   let result = [];
+//   for (let i = 0; i < canvasObject.length; i++) {
+//     if (canvasObject[i] instanceof Line) {
+//       let line = canvasObject[i];
+//       if (
+//         cursor.x
+//       )
+//   }
+// }
 
 function canvasMove(e) {
   //detect user's cursor move on canvas
@@ -237,17 +289,23 @@ function canvasMove(e) {
     setTimeout(function () {
       let cursor = { x: e.clientX, y: e.clientY };
       let translatedMidPoint = translatePointCoordinate(cursor.x, cursor.y);
-      selectedObject.resizeRectangle(translatedMidPoint.x);
+      if (selectedObject instanceof Rectangle) {
+        selectedObject.resizeRectangle(translatedMidPoint.x);
+      } else if (selectedObject instanceof Line) {
+        selectedObject.resizeLine(translatedMidPoint.x, translatedMidPoint.y);
+      }
     }, 10);
   }
 }
 
+/* MAIN */
 let canvas = document.getElementById("my_Canvas");
 let gl = canvas.getContext("webgl");
 const modes = {
   DRAWING: 1,
   MOVING: 2,
   RESIZING: 3,
+  DRAWLINE: 4,
 };
 currentMode = modes.DRAWING;
 let selectedObject = null;
@@ -261,3 +319,5 @@ console.log(document.getElementById("colorPicker").value);
 let rect = canvas.getBoundingClientRect();
 console.log(rect.left);
 console.log(rect.top);
+let firstPoint;
+let secondPoint;
