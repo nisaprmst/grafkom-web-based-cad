@@ -1,6 +1,7 @@
 function enterMode(mode) {
   //switch mode
   currentMode = mode;
+  document.getElementById("mode").innerHTML = mode;
 }
 
 function loadFile() {
@@ -153,6 +154,14 @@ function canvasClick(e) {
     secondPoint = new Point(translatedMidPoint.x, translatedMidPoint.y);
     createLine(firstPoint, secondPoint);
     enterMode(modes.DRAWING);
+  } else if (currentMode == modes.RECOLORING) {
+    let selected = getAllSelected(translatedMidPoint);
+    let temp = selected[selected.length - 1];
+    if (temp instanceof Polygon) {
+      let newColor = hexToRgb(document.getElementById("colorPicker").value);
+      temp.changeColor(newColor);
+      enterMode(modes.DRAWING);
+    }
   } else {
     if (!selectedObject) {
       let selected = getAllSelected(translatedMidPoint);
@@ -327,10 +336,11 @@ function canvasMove(e) {
 let canvas = document.getElementById("my_Canvas");
 let gl = canvas.getContext("webgl");
 const modes = {
-  DRAWING: 1,
-  MOVING: 2,
-  RESIZING: 3,
-  DRAWLINE: 4,
+  DRAWING: "Drawing",
+  MOVING: "Moving",
+  RESIZING: "Resizing",
+  DRAWLINE: "Drawing Line",
+  RECOLORING: "Recoloring",
 };
 currentMode = modes.DRAWING;
 let selectedObject = null;
