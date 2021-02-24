@@ -31,6 +31,5 @@ class Point {
   }
   movePoint(newX, newY) {
     this.vertices = [newX, newY, -0.5];
-    renderAll();
   }
 }
