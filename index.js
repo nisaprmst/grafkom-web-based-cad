@@ -59,6 +59,27 @@ function loadFile() {
         canvasObject.push(
           new Polygon(attr.midPoint, attr.color, attr.numSides, attr.radius)
         );
+      } else if (result[i] == "L") {
+        i++;
+        let coordinates = result[i].split(",");
+        let firstPoint = { x: coordinates[0], y: coordinates[1] };
+        let secondPoint = { x: coordinates[3], y: coordinates[4] };
+        i++;
+        let colorArr = result[i].split(" ");
+        let color = {
+          red: parseFloat(colorArr[0]),
+          green: parseFloat(colorArr[1]),
+          blue: parseFloat(colorArr[2]),
+        };
+        i++;
+        let attr = {
+          firstPoint: firstPoint,
+          secondPoint: secondPoint,
+          color: color,
+        };
+        canvasObject.push(
+          new Line(attr.firstPoint, attr.secondPoint, attr.color)
+        );
       } else if (result[i] == "") {
         i++;
       }
@@ -85,6 +106,10 @@ function saveFile() {
       text += `${canvasObject[i].numSides}\n`;
       text += `${canvasObject[i].color.red} ${canvasObject[i].color.green} ${canvasObject[i].color.blue}\n`;
       text += `${canvasObject[i].radius}\n`;
+    } else if (canvasObject[i] instanceof Line) {
+      text += "L\n";
+      text += `${canvasObject[i].vertices}\n`;
+      text += `${canvasObject[i].color.red} ${canvasObject[i].color.green} ${canvasObject[i].color.blue}\n`;
     }
   }
   let blob = new Blob([text], { type: "text/plain" });
