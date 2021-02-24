@@ -3,6 +3,117 @@ function enterMode(mode) {
   currentMode = mode;
 }
 
+function loadFile() {
+  console.log("Test");
+  let file = document.getElementById("inputfile").files[0];
+  let fr = new FileReader();
+  fr.onload = function () {
+    let result = fr.result.split("\n");
+    canvasObject = [canvasObject[0]];
+    let i = 0;
+    while (i < result.length) {
+      if (result[i] == "R") {
+        i++;
+        let midpointArr = result[i].split(" ");
+        let midPoint = {
+          x: parseFloat(midpointArr[0]),
+          y: parseFloat(midpointArr[1]),
+        };
+        i++;
+        let colorArr = result[i].split(" ");
+        let color = {
+          red: parseFloat(colorArr[0]),
+          green: parseFloat(colorArr[1]),
+          blue: parseFloat(colorArr[2]),
+        };
+        i++;
+        let width = parseFloat(result[i]);
+        i++;
+        let attr = { midPoint: midPoint, color: color, width: width };
+        canvasObject.push(new Rectangle(attr.midPoint, attr.color, attr.width));
+      } else if (result[i] == "P") {
+        i++;
+        let midpointArr = result[i].split(" ");
+        let midPoint = {
+          x: parseFloat(midpointArr[0]),
+          y: parseFloat(midpointArr[1]),
+        };
+        i++;
+        let numSides = parseInt(result[i]);
+        i++;
+        let colorArr = result[i].split(" ");
+        let color = {
+          red: parseFloat(colorArr[0]),
+          green: parseFloat(colorArr[1]),
+          blue: parseFloat(colorArr[2]),
+        };
+        i++;
+        let radius = parseFloat(result[i]);
+        i++;
+        let attr = {
+          midPoint: midPoint,
+          color: color,
+          numSides: numSides,
+          radius: radius,
+        };
+        canvasObject.push(
+          new Polygon(attr.midPoint, attr.color, attr.numSides, attr.radius)
+        );
+      } else if (result[i] == "") {
+        i++;
+      }
+    }
+    renderAll();
+  };
+  try {
+    fr.readAsText(file);
+  } catch (e) {}
+}
+
+function saveFile() {
+  let filename = document.getElementById("fname").value;
+  let text = "";
+  for (let i = 0; i < canvasObject.length; i++) {
+    if (canvasObject[i] instanceof Rectangle) {
+      text += "R\n";
+      text += `${canvasObject[i].midPoint.x} ${canvasObject[i].midPoint.y}\n`;
+      text += `${canvasObject[i].color.red} ${canvasObject[i].color.green} ${canvasObject[i].color.blue}\n`;
+      text += `${canvasObject[i].width}\n`;
+    } else if (canvasObject[i] instanceof Polygon) {
+      text += "P\n";
+      text += `${canvasObject[i].midPoint.x} ${canvasObject[i].midPoint.y}\n`;
+      text += `${canvasObject[i].numSides}\n`;
+      text += `${canvasObject[i].color.red} ${canvasObject[i].color.green} ${canvasObject[i].color.blue}\n`;
+      text += `${canvasObject[i].radius}\n`;
+    }
+  }
+  let blob = new Blob([text], { type: "text/plain" });
+  let link = document.createElement("a");
+  link.download = filename;
+  link.innerHTML = "Download File";
+  link.href = window.URL.createObjectURL(blob);
+  document.body.appendChild(link);
+  console.log(canvasObject);
+}
+
+// function loadFile() {
+//   // var filename = "readme.txt";
+//   // var text = "Text of the file goes here.";
+//   // var blob = new Blob([text], { type: "text/plain" });
+//   // var link = document.createElement("a");
+//   // link.download = filename;
+//   // link.innerHTML = "Download File";
+//   // link.href = window.URL.createObjectURL(blob);
+//   // document.body.appendChild(link);
+//   // console.log("Load File Success");
+//   // var fr = new FileReader();
+//   // fr.onload = function () {
+//   //   console.log(fr.result);
+//   //   //document.getElementById("output").textContent = fr.result;
+//   // };
+//   // fr.readAsText(document.getElementById("inputfile").file[0]);
+// }
+
 function canvasClick(e) {
   //detect user click on canvas
   let midPoint = { x: e.clientX, y: e.clientY };
@@ -45,23 +156,38 @@ function createLine(firstPoint, secondPoint) {
   renderAll();
 }
 
-function createRectangle() {
+function createRectangle(attr) {
   //create new triangle
-  let hexColor = document.getElementById("colorPicker").value;
+  let midPoint =
+    attr && attr.midPoint
+      ? attr.midPoint
+      : { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
+  let color =
+    attr && attr.color
+      ? attr.color
+      : hexToRgb(document.getElementById("colorPicker").value);
+  let width = attr && attr.width ? attr.width : 0.4;
   if (currentMode == modes.DRAWING) {
-    let midPoint = { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
-    let rect = new Rectangle(midPoint, hexToRgb(hexColor));
+    let rect = new Rectangle(midPoint, color, width);
     canvasObject.push(rect);
     renderAll();
   }
 }
 
-function createPolygon() {
+function createPolygon(attr) {
   //create new triangle
-  let hexColor = document.getElementById("colorPicker").value;
+  let midPoint =
+    attr && attr.midPoint
+      ? attr.midPoint
+      : { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
+  let color =
+    attr && attr.color
+      ? attr.color
+      : hexToRgb(document.getElementById("colorPicker").value);
+  let numSides = attr && attr.numSides ? attr.numSides : 6;
+  let radius = attr && attr.radius ? attr.radius : 0.4;
   if (currentMode == modes.DRAWING) {
-    let midPoint = { x: controlPoint.vertices[0], y: controlPoint.vertices[1] };
-    let rect = new Polygon(midPoint, hexToRgb(hexColor), 6);
+    let rect = new Polygon(midPoint, color, numSides, radius);
     canvasObject.push(rect);
     renderAll();
   }
